@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="shopNivoApp" ng-controller="mainController">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopNivo | Multi-Category Online Shopping</title>
+  <meta name="description" content="Shop the latest fashion dresses, 5G smartphones, laptops, electronics, footwear, and home appliances on ShopNivo with exclusive discounts and express delivery.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- AngularJS 1.8.2 CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================
+       HEADER & NAVIGATION
+       ========================================== -->
+  <header class="fk-header">
+    <div class="fk-topbar">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="fk-brand" ng-click="resetFilters()">
+        <div class="fk-logo">
+          <i class="fa-solid fa-bag-shopping"></i> ShopNivo <span>Plus</span>
+        </div>
+        <div class="fk-sublogo">
+          Explore <strong>Plus</strong> <i class="fa-solid fa-star" style="color: #ffe500; font-size: 9px;"></i>
+        </div>
+      </a>
+
+      <!-- Universal Search Bar -->
+      <div class="fk-search-container">
+        <div class="fk-search-box">
+          <input type="text" 
+                 class="fk-search-input" 
+                 placeholder="Search for dresses, smartphones, laptops, shoes, brands and more..." 
+                 ng-model="filters.search"
+                 ng-change="onSearch()">
+          <button class="fk-search-btn" ng-click="onSearch()" title="Search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Header Action Items -->
+      <div class="fk-actions">
+        <!-- Pincode Selector Mock -->
+        <div class="fk-nav-item" style="cursor: pointer;" title="Deliver to">
+          <i class="fa-solid fa-location-dot" style="color: var(--fk-yellow);"></i>
+          <span style="font-size: 12px; display: flex; flex-direction: column;">
+            <span style="color: #cbd5e1; font-size: 10px;">Deliver to</span>
+            <strong>Mumbai 400001</strong>
+          </span>
+        </div>
+
+        <!-- Login Button -->
+        <button class="fk-btn-login">
+          <i class="fa-regular fa-user"></i> Login
+        </button>
+
+        <!-- Wishlist -->
+        <div class="fk-nav-item" style="cursor: pointer;" ng-click="triggerToast('Wishlist contains ' + getWishlistCount() + ' items')">
+          <i class="fa-regular fa-heart" style="font-size: 18px;"></i>
+          <span>Wishlist</span>
+          <span class="fk-badge" ng-if="getWishlistCount() > 0">{{getWishlistCount()}}</span>
+        </div>
+
+        <!-- Cart Drawer Button -->
+        <div class="fk-nav-item" style="cursor: pointer;" ng-click="openCart()">
+          <i class="fa-solid fa-cart-shopping" style="font-size: 18px;"></i>
+          <span>Cart</span>
+          <span class="fk-badge" ng-if="getCartCount() > 0">{{getCartCount()}}</span>
+        </div>
+
+        <!-- Dark / Light Theme Toggle -->
+        <button class="fk-theme-toggle" ng-click="toggleTheme()" title="Toggle Theme">
+          <i class="fa-solid" ng-class="{'fa-sun': theme === 'dark', 'fa-moon': theme === 'light'}"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Category Navigation Bar -->
+    <nav class="fk-category-nav">
+      <div class="fk-category-list">
+        <div class="fk-cat-item" 
+             ng-repeat="cat in categories" 
+             ng-class="{'active': filters.category === cat.slug}"
+             ng-click="selectCategory(cat.slug)">
+          <div class="fk-cat-icon">
+            <i class="fa-solid" ng-class="cat.icon_class"></i>
+          </div>
+          <span class="fk-cat-name">{{cat.name}}</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ==========================================
+       MAIN CONTENT CONTAINER
+       ========================================== -->
+  <main class="fk-container">
+
+    <!-- HERO PROMO CAROUSEL -->
+    <section class="fk-hero-section">
+      <div class="fk-carousel">
+        <div class="fk-slide" 
+             ng-repeat="slide in slides" 
+             ng-class="{'active': $index === carouselIndex}"
+             style="background-image: url('{{slide.bg}}');">
+          <div class="fk-slide-overlay"></div>
+          <div class="fk-slide-content">
+            <span class="fk-slide-tag">{{slide.tag}}</span>
+            <h2 class="fk-slide-title">{{slide.title}}</h2>
+            <p class="fk-slide-desc">{{slide.desc}}</p>
+            <button class="fk-btn-primary" ng-click="selectCategory(slide.ctaCategory)">
+              Shop Now <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Carousel Indicators -->
+        <div class="fk-carousel-nav">
+          <span class="fk-dot" 
+                ng-repeat="slide in slides" 
+                ng-class="{'active': $index === carouselIndex}"
+                ng-click="$parent.carouselIndex = $index"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEAL OF THE DAY FLASH SECTION -->
+    <section class="fk-deal-card" ng-if="deals.length > 0">
+      <div class="fk-deal-header">
+        <div class="fk-deal-title-box">
+          <h2 class="fk-deal-title"><i class="fa-solid fa-bolt" style="color: var(--fk-orange);"></i> Deal of the Day</h2>
+          <div class="fk-timer" title="Time remaining for deals">
+            <i class="fa-regular fa-clock"></i>
+            <span>{{timer.hours}} : {{timer.minutes}} : {{timer.seconds}} Left</span>
+          </div>
+        </div>
+        <button class="fk-btn-secondary" ng-click="filters.ordering = 'discount'; loadProducts();">
+          VIEW ALL DEALS <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+        </button>
+      </div>
+
+      <div class="fk-deal-grid">
+        <div class="fk-product-card" ng-repeat="p in deals | limitTo:4">
+          <!-- Wishlist Toggle Button -->
+          <button class="fk-wishlist-btn" ng-class="{'active': isWishlisted(p.id)}" ng-click="toggleWishlist(p, $event)">
+            <i class="fa-solid fa-heart"></i>
+          </button>
+
+          <!-- Product Image -->
+          <div class="fk-img-box" ng-click="openQuickView(p, $event)">
+            <img ng-src="{{p.primary_image}}" alt="{{p.title}}">
+          </div>
+
+          <!-- Info -->
+          <div>
+            <span class="fk-prod-brand">{{p.brand}}</span>
+            <h3 class="fk-prod-title" ng-click="openQuickView(p, $event)">{{p.title}}</h3>
+            
+            <div class="fk-rating-row">
+              <span class="fk-rating-badge">{{p.rating}} <i class="fa-solid fa-star"></i></span>
+              <span class="fk-review-count">({{p.reviews_count}})</span>
+            </div>
+
+            <div class="fk-price-row">
+              <span class="fk-current-price">{{p.price | inrCurrency}}</span>
+              <span class="fk-original-price" ng-if="p.original_price">{{p.original_price | inrCurrency}}</span>
+              <span class="fk-discount-badge" ng-if="p.original_price">{{p | discountTag}}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="fk-card-actions">
+            <button class="fk-btn-secondary" ng-click="openQuickView(p, $event)">Quick View</button>
+            <button class="fk-btn-cart" ng-click="addToCart(p, null, null, $event)">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAYOUT: FILTER SIDEBAR & PRODUCT CATALOG -->
+    <div class="fk-layout">
+
+      <!-- FILTER SIDEBAR -->
+      <aside class="fk-filter-sidebar">
+        <div class="fk-filter-head">
+          <h3><i class="fa-solid fa-sliders" style="color: var(--fk-blue);"></i> Filters</h3>
+          <button class="fk-reset-btn" ng-click="resetFilters()">CLEAR ALL</button>
+        </div>
+
+        <!-- Category Tree Filter -->
+        <div class="fk-filter-group">
+          <label class="fk-filter-label">Categories</label>
+          <div class="fk-checkbox-list">
+            <label class="fk-checkbox-item" ng-repeat="c in categories">
+              <input type="radio" 
+                     name="catRadio" 
+                     ng-value="c.slug" 
+                     ng-model="filters.category" 
+                     ng-change="loadProducts()">
+              <span>{{c.name}}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Price Range Slider -->
+        <div class="fk-filter-group">
+          <label class="fk-filter-label">Max Price Limit</label>
+          <div class="fk-price-range">
+            <input type="range" 
+                   class="fk-slider" 
+                   min="1000" 
+                   max="160000" 
+                   step="1000" 
+                   ng-model="filters.maxPrice" 
+                   ng-change="loadProducts()">
+            <div class="fk-price-inputs">
+              <span>₹1,000</span>
+              <span style="color: var(--fk-blue);">Up to {{filters.maxPrice | inrCurrency}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Minimum Rating Filter -->
+        <div class="fk-filter-group">
+          <label class="fk-filter-label">Customer Ratings</label>
+          <div class="fk-checkbox-list">
+            <label class="fk-checkbox-item">
+              <input type="radio" name="ratingRadio" ng-value="4.5" ng-model="filters.minRating" ng-change="loadProducts()">
+              <span>4.5★ & above</span>
+            </label>
+            <label class="fk-checkbox-item">
+              <input type="radio" name="ratingRadio" ng-value="4.0" ng-model="filters.minRating" ng-change="loadProducts()">
+              <span>4.0★ & above</span>
+            </label>
+            <label class="fk-checkbox-item">
+              <input type="radio" name="ratingRadio" ng-value="0" ng-model="filters.minRating" ng-change="loadProducts()">
+              <span>All Ratings</span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- PRODUCT CATALOG MAIN SECTION -->
+      <section>
+        
+        <!-- Toolbar Bar -->
+        <div class="fk-toolbar">
+          <div class="fk-results-count">
+            Showing <strong>{{products.length}}</strong> products 
+            <span ng-if="filters.category !== 'all'">in category <strong style="color: var(--fk-blue);">{{filters.category}}</strong></span>
+          </div>
+
+          <!-- Sorting Dropdown -->
+          <div class="fk-sort-container">
+            <label class="fk-sort-label">Sort By:</label>
+            <select class="fk-sort-select" ng-model="filters.ordering" ng-change="loadProducts()">
+              <option value="relevance">Relevance</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
+              <option value="rating">Customer Rating</option>
+              <option value="discount">Highest Discount</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Loading State Spinner -->
+        <div ng-if="loading" style="text-align: center; padding: 60px 0; color: var(--fk-text-muted);">
+          <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--fk-blue);"></i>
+          <p style="margin-top: 12px; font-weight: 600;">Fetching curated products...</p>
+        </div>
+
+        <!-- Empty Products State -->
+        <div ng-if="!loading && products.length === 0" style="background: var(--fk-card-bg); padding: 50px; text-align: center; border-radius: var(--radius-md); border: 1px solid var(--fk-border);">
+          <i class="fa-solid fa-box-open fa-3x" style="color: var(--fk-text-muted); margin-bottom: 16px;"></i>
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">No products match your current filters</h3>
+          <p style="color: var(--fk-text-muted); margin-bottom: 20px;">Try clearing filters or searching for something else.</p>
+          <button class="fk-btn-primary" ng-click="resetFilters()">Reset All Filters</button>
+        </div>
+
+        <!-- Product Cards Grid -->
+        <div class="fk-product-grid" ng-if="!loading && products.length > 0">
+          <div class="fk-product-card" ng-repeat="p in products">
+            
+            <!-- Wishlist Heart -->
+            <button class="fk-wishlist-btn" ng-class="{'active': isWishlisted(p.id)}" ng-click="toggleWishlist(p, $event)" title="Add to wishlist">
+              <i class="fa-solid fa-heart"></i>
+            </button>
+
+            <!-- Image Box -->
+            <div class="fk-img-box" ng-click="openQuickView(p, $event)">
+              <img ng-src="{{p.primary_image}}" alt="{{p.title}}">
+            </div>
+
+            <!-- Content -->
+            <div>
+              <span class="fk-prod-brand">{{p.brand}}</span>
+              <h3 class="fk-prod-title" ng-click="openQuickView(p, $event)">{{p.title}}</h3>
+              
+              <div class="fk-rating-row">
+                <span class="fk-rating-badge">{{p.rating}} <i class="fa-solid fa-star"></i></span>
+                <span class="fk-review-count">({{p.reviews_count}})</span>
+              </div>
+
+              <div class="fk-price-row">
+                <span class="fk-current-price">{{p.price | inrCurrency}}</span>
+                <span class="fk-original-price" ng-if="p.original_price">{{p.original_price | inrCurrency}}</span>
+                <span class="fk-discount-badge" ng-if="p.original_price">{{p | discountTag}}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="fk-card-actions">
+              <button class="fk-btn-secondary" ng-click="openQuickView(p, $event)">Quick View</button>
+              <button class="fk-btn-cart" ng-click="addToCart(p, null, null, $event)">Add to Cart</button>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- FEATURE HIGHLIGHT BADGES -->
+    <section class="fk-features-bar">
+      <div class="fk-feat-box">
+        <div class="fk-feat-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="fk-feat-text">
+          <h4>Free Express Delivery</h4>
+          <p>On orders above ₹499 across India</p>
+        </div>
+      </div>
+
+      <div class="fk-feat-box">
+        <div class="fk-feat-icon"><i class="fa-solid fa-rotate-left"></i></div>
+        <div class="fk-feat-text">
+          <h4>7 Days Replacement</h4>
+          <p>Hassle-free easy return policy</p>
+        </div>
+      </div>
+
+      <div class="fk-feat-box">
+        <div class="fk-feat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="fk-feat-text">
+          <h4>100% Secure Payments</h4>
+          <p>Protected by Bank-grade SSL Encryption</p>
+        </div>
+      </div>
+
+      <div class="fk-feat-box">
+        <div class="fk-feat-icon"><i class="fa-solid fa-headset"></i></div>
+        <div class="fk-feat-text">
+          <h4>24x7 Customer Help</h4>
+          <p>Dedicated round-the-clock support</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       SLIDE-OVER SHOPPING CART DRAWER
+       ========================================== -->
+  <div class="fk-drawer-overlay" ng-class="{'open': isCartOpen}" ng-click="closeCart()">
+    <div class="fk-cart-drawer" ng-click="$event.stopPropagation()">
+      
+      <!-- Drawer Head -->
+      <div class="fk-drawer-head">
+        <h3><i class="fa-solid fa-bag-shopping"></i> My Shopping Cart ({{getCartCount()}})</h3>
+        <button class="fk-close-btn" ng-click="closeCart()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Drawer Items List -->
+      <div class="fk-cart-body">
+        
+        <!-- Empty Cart -->
+        <div ng-if="getCartItems().length === 0" style="text-align: center; padding: 60px 20px; color: var(--fk-text-muted);">
+          <i class="fa-solid fa-cart-arrow-down fa-3x" style="color: var(--fk-text-muted); margin-bottom: 16px;"></i>
+          <h4 style="font-size: 16px; font-weight: 700;">Your Cart is Empty</h4>
+          <p style="font-size: 13px; margin-top: 6px;">Add products from our fashion or electronics catalog to see them here.</p>
+        </div>
+
+        <!-- Cart Items -->
+        <div class="fk-cart-item" ng-repeat="item in getCartItems()">
+          <img ng-src="{{item.product.primary_image}}" alt="{{item.product.title}}" class="fk-cart-img">
+          
+          <div class="fk-cart-info">
+            <h4 class="fk-cart-title">{{item.product.title}}</h4>
+            <div style="font-size: 11px; color: var(--fk-text-muted);" ng-if="item.selectedSize || item.selectedColor">
+              <span ng-if="item.selectedSize">Size: <strong>{{item.selectedSize}}</strong></span>
+              <span ng-if="item.selectedColor"> | Color: <strong>{{item.selectedColor}}</strong></span>
+            </div>
+
+            <div style="font-weight: 800; color: var(--fk-text-main); font-size: 14px; margin-top: 4px;">
+              {{item.product.price | inrCurrency}}
+            </div>
+
+            <!-- Quantity Controls -->
+            <div class="fk-cart-qty-row">
+              <button class="fk-qty-btn" ng-click="updateQty($index, -1)">-</button>
+              <span class="fk-qty-val">{{item.quantity}}</span>
+              <button class="fk-qty-btn" ng-click="updateQty($index, 1)">+</button>
+            </div>
+          </div>
+
+          <!-- Remove Button -->
+          <button class="fk-remove-btn" ng-click="removeFromCart($index)" title="Remove item">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer Summary -->
+      <div class="fk-drawer-footer" ng-if="getCartItems().length > 0">
+        
+        <!-- Coupon Code Input -->
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <input type="text" 
+                 placeholder="Coupon Code (e.g. SHOPNIVO10)" 
+                 class="fk-sort-select" 
+                 style="flex: 1;" 
+                 ng-model="couponCode">
+          <button class="fk-btn-secondary" ng-click="applyCoupon()">Apply</button>
+        </div>
+
+        <div class="fk-summary-row">
+          <span>Subtotal Original Price</span>
+          <span>{{getCartSubtotal() | inrCurrency}}</span>
+        </div>
+        <div class="fk-summary-row" style="color: var(--fk-green); font-weight: 700;">
+          <span>Bag Discount Savings</span>
+          <span>- {{getCartDiscount() | inrCurrency}}</span>
+        </div>
+        <div class="fk-summary-row" ng-if="couponApplied" style="color: var(--fk-green); font-weight: 700;">
+          <span>Promo Coupon (10% OFF)</span>
+          <span>- 10%</span>
+        </div>
+        <div class="fk-summary-row">
+          <span>Delivery Fee</span>
+          <span style="color: var(--fk-green); font-weight: 700;">FREE</span>
+        </div>
+
+        <div class="fk-summary-row fk-summary-total">
+          <span>Total Amount</span>
+          <span>{{getCartFinalTotal() | inrCurrency}}</span>
+        </div>
+
+        <button class="fk-btn-primary" style="width: 100%; justify-content: center; margin-top: 14px; padding: 12px;" ng-click="triggerToast('Order Placed Successfully! Thank you for shopping on ShopNivo 🎉')">
+          PLACE ORDER <i class="fa-solid fa-bolt"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       QUICK VIEW PRODUCT MODAL
+       ========================================== -->
+  <div class="fk-modal-overlay" ng-class="{'open': isQuickViewOpen}" ng-click="closeQuickView()">
+    <div class="fk-modal-card" ng-click="$event.stopPropagation()" ng-if="quickViewProduct">
+      
+      <!-- Close Button -->
+      <button class="fk-modal-close" ng-click="closeQuickView()"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- Modal Product Image -->
+      <div class="fk-modal-img-box">
+        <img ng-src="{{quickViewProduct.primary_image}}" alt="{{quickViewProduct.title}}">
+      </div>
+
+      <!-- Modal Product Info -->
+      <div class="fk-modal-details">
+        <div>
+          <span class="fk-prod-brand" style="font-size: 13px;">{{quickViewProduct.brand}}</span>
+          <h2 style="font-size: 20px; font-weight: 800; line-height: 1.3; margin: 6px 0 10px;">{{quickViewProduct.title}}</h2>
+
+          <div class="fk-rating-row" style="margin-bottom: 12px;">
+            <span class="fk-rating-badge" style="font-size: 13px; padding: 3px 8px;">{{quickViewProduct.rating}} <i class="fa-solid fa-star"></i></span>
+            <span class="fk-review-count" style="font-size: 13px;">({{quickViewProduct.reviews_count}} verified ratings)</span>
+          </div>
+
+          <div class="fk-price-row" style="margin-bottom: 16px;">
+            <span class="fk-current-price" style="font-size: 26px;">{{quickViewProduct.price | inrCurrency}}</span>
+            <span class="fk-original-price" style="font-size: 16px;" ng-if="quickViewProduct.original_price">{{quickViewProduct.original_price | inrCurrency}}</span>
+            <span class="fk-discount-badge" style="font-size: 16px;" ng-if="quickViewProduct.original_price">{{quickViewProduct | discountTag}}</span>
+          </div>
+
+          <p style="font-size: 13px; color: var(--fk-text-muted); line-height: 1.6; margin-bottom: 16px;">
+            {{quickViewProduct.description}}
+          </p>
+
+          <!-- Size Variant Selection (if available) -->
+          <div ng-if="quickViewProduct.sizes_list && quickViewProduct.sizes_list.length > 0" style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--fk-text-muted);">Select Size:</label>
+            <div class="fk-variant-pills">
+              <span class="fk-pill" 
+                    ng-repeat="sz in quickViewProduct.sizes_list" 
+                    ng-class="{'selected': selectedSize === sz}" 
+                    ng-click="$parent.selectedSize = sz">{{sz}}</span>
+            </div>
+          </div>
+
+          <!-- Color Variant Selection (if available) -->
+          <div ng-if="quickViewProduct.colors_list && quickViewProduct.colors_list.length > 0" style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--fk-text-muted);">Select Color:</label>
+            <div class="fk-variant-pills">
+              <span class="fk-pill" 
+                    ng-repeat="clr in quickViewProduct.colors_list" 
+                    ng-class="{'selected': selectedColor === clr}" 
+                    ng-click="$parent.selectedColor = clr">{{clr}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to Cart CTA -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+          <button class="fk-btn-cart" style="padding: 12px; font-size: 14px;" ng-click="addToCart(quickViewProduct, selectedSize, selectedColor); closeQuickView(); openCart();">
+            <i class="fa-solid fa-cart-shopping"></i> ADD TO CART
+          </button>
+          <button class="fk-btn-primary" style="padding: 12px; font-size: 14px; justify-content: center;" ng-click="addToCart(quickViewProduct, selectedSize, selectedColor); closeQuickView(); openCart();">
+            BUY NOW <i class="fa-solid fa-bolt"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TOAST NOTIFICATION BANNER
+       ========================================== -->
+  <div ng-if="showToast" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #ffffff; padding: 12px 28px; border-radius: var(--radius-full); font-weight: 700; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 4000; border: 1px solid rgba(255,255,255,0.2);">
+    {{toastMessage}}
+  </div>
+
+  <!-- ==========================================
+       SHOPNIVO RICH FOOTER
+       ========================================== -->
+  <footer class="fk-footer">
+    <div class="fk-footer-grid">
+      <div class="fk-foot-col">
+        <h5>ABOUT</h5>
+        <ul>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">ShopNivo Stories</a></li>
+          <li><a href="#">Press Release</a></li>
+        </ul>
+      </div>
+
+      <div class="fk-foot-col">
+        <h5>HELP</h5>
+        <ul>
+          <li><a href="#">Payments</a></li>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Cancellation & Returns</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Report Infringement</a></li>
+        </ul>
+      </div>
+
+      <div class="fk-foot-col">
+        <h5>CONSUMER POLICY</h5>
+        <ul>
+          <li><a href="#">Return Policy</a></li>
+          <li><a href="#">Terms Of Use</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">EPR Compliance</a></li>
+        </ul>
+      </div>
+
+      <div class="fk-foot-col">
+        <h5>SOCIAL</h5>
+        <ul>
+          <li><a href="#"><i class="fa-brands fa-facebook"></i> Facebook</a></li>
+          <li><a href="#"><i class="fa-brands fa-x-twitter"></i> X (Twitter)</a></li>
+          <li><a href="#"><i class="fa-brands fa-youtube"></i> YouTube</a></li>
+          <li><a href="#"><i class="fa-brands fa-instagram"></i> Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fk-footer-bottom">
+      <div>
+        <i class="fa-solid fa-store" style="color: var(--fk-yellow);"></i> Become a Seller &nbsp;&nbsp;|&nbsp;&nbsp;
+        <i class="fa-solid fa-rectangle-ad" style="color: var(--fk-yellow);"></i> Advertise &nbsp;&nbsp;|&nbsp;&nbsp;
+        <i class="fa-solid fa-gift" style="color: var(--fk-yellow);"></i> Gift Cards
+      </div>
+      <div>© 2026 ShopNivo E-Commerce. Crafted with AngularJS & Django.</div>
+    </div>
+  </footer>
+
+  <!-- AngularJS Application Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/services/productService.js"></script>
+  <script src="js/services/cartService.js"></script>
+  <script src="js/controllers/mainController.js"></script>
+</body>
+</html>
