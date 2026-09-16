@@ -1,6 +1,7 @@
 import os
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.static import serve
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
@@ -14,6 +15,7 @@ def serve_index(request):
 
 urlpatterns = [
     path('', serve_index, name='home'),
+    re_path(r'^(?P<path>(css|js)/.*)$', serve, {'document_root': settings.BASE_DIR.parent / 'frontend'}),
     path('admin/', admin.site.urls),
     path('api/', include('products.urls')),
 ]
