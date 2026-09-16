@@ -117,7 +117,7 @@
         <div class="fk-slide" 
              ng-repeat="slide in slides" 
              ng-class="{'active': $index === carouselIndex}"
-             style="background-image: url('{{slide.bg}}');">
+             ng-style="{'background-image': 'url(' + slide.bg + ')'}">
           <div class="fk-slide-overlay"></div>
           <div class="fk-slide-content">
             <span class="fk-slide-tag">{{slide.tag}}</span>
