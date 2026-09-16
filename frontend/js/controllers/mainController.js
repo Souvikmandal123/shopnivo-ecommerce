@@ -61,6 +61,7 @@
       // Modal & Drawer State
       $scope.isCartOpen = false;
       $scope.isQuickViewOpen = false;
+      $scope.showMobileFilters = false;
       $scope.quickViewProduct = null;
       $scope.selectedSize = null;
       $scope.selectedColor = null;
@@ -69,6 +70,10 @@
       $scope.couponCode = '';
       $scope.couponApplied = false;
       $scope.couponDiscountPct = 0;
+
+      $scope.toggleMobileFilters = function () {
+        $scope.showMobileFilters = !$scope.showMobileFilters;
+      };
 
       // Theme Management
       document.documentElement.setAttribute('data-theme', $scope.theme);

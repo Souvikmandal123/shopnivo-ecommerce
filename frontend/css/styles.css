@@ -1167,32 +1167,247 @@ img {
   color: #878787;
 }
 
-/* Responsive Breakpoints */
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE SYSTEM (SHOPNIVO MOBILE APP STYLE)
+   ========================================================================== */
+
+/* Mobile Filter Toggle Button */
+.fk-mobile-filter-btn {
+  display: none;
+  background: var(--fk-blue-light);
+  color: var(--fk-blue);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 14px;
+  border: 1px solid var(--fk-blue);
+  transition: var(--tr-fast);
+}
+
+.fk-mobile-filter-btn:hover {
+  background: var(--fk-blue);
+  color: #ffffff;
+}
+
 @media (max-width: 992px) {
   .fk-layout {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
+
+  .fk-mobile-filter-btn {
+    display: flex;
+  }
+
   .fk-filter-sidebar {
     position: static;
+    display: none;
   }
-  .fk-modal-card {
-    grid-template-columns: 1fr;
+
+  .fk-filter-sidebar.open-mobile {
+    display: block;
+    animation: fadeIn 0.3s ease;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
   .fk-topbar {
-    flex-wrap: wrap;
+    padding: 10px 12px;
+    gap: 10px;
   }
+
+  .fk-logo {
+    font-size: 20px;
+  }
+
+  .fk-actions {
+    gap: 12px;
+  }
+
+  .fk-nav-item span {
+    display: none; /* Hide icon text labels on mobile for clean header layout */
+  }
+
+  .fk-nav-item i {
+    font-size: 20px;
+  }
+
+  .fk-btn-login {
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+
   .fk-search-container {
-    order: 3;
+    margin-top: 4px;
+  }
+
+  .fk-search-input {
+    font-size: 12px;
+    padding: 6px 4px;
+  }
+
+  .fk-category-list {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .fk-cat-item {
+    padding: 4px 8px;
+  }
+
+  .fk-cat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .fk-cat-name {
+    font-size: 11px;
+  }
+
+  /* Carousel on Mobile */
+  .fk-carousel {
+    height: 190px;
+    border-radius: var(--radius-sm);
+  }
+
+  .fk-slide {
+    padding: 16px;
+  }
+
+  .fk-slide-title {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .fk-slide-desc {
+    font-size: 12px;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fk-btn-primary {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  /* 2 Columns Product Grid on Mobile like Flipkart/Amazon mobile apps */
+  .fk-deal-grid, .fk-product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .fk-product-card {
+    padding: 8px;
+  }
+
+  .fk-img-box {
+    height: 125px;
+    padding: 4px;
+  }
+
+  .fk-prod-brand {
+    font-size: 10px;
+  }
+
+  .fk-prod-title {
+    font-size: 12px;
+    height: 30px;
+    margin: 2px 0 4px;
+  }
+
+  .fk-current-price {
+    font-size: 14px;
+  }
+
+  .fk-original-price {
+    font-size: 11px;
+  }
+
+  .fk-discount-badge {
+    font-size: 10px;
+  }
+
+  .fk-card-actions {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .fk-btn-secondary, .fk-btn-cart {
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+
+  /* Deal Header on Mobile */
+  .fk-deal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .fk-deal-title {
+    font-size: 16px;
+  }
+
+  .fk-timer {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  /* Toolbar on Mobile */
+  .fk-toolbar {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .fk-results-count {
+    font-size: 12px;
+  }
+
+  .fk-sort-container {
     width: 100%;
+    justify-content: space-between;
+  }
+
+  .fk-sort-select {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  /* Full Width Cart Drawer on Mobile */
+  .fk-cart-drawer {
     max-width: 100%;
   }
-  .fk-carousel {
+
+  /* Quick View Modal on Mobile */
+  .fk-modal-overlay {
+    padding: 10px;
+  }
+
+  .fk-modal-card {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 14px;
+    max-height: 95vh;
+  }
+
+  .fk-modal-img-box {
     height: 200px;
   }
-  .fk-slide-title {
-    font-size: 22px;
+
+  /* Footer on Mobile */
+  .fk-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
   }
 }

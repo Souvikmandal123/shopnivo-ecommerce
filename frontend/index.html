@@ -193,10 +193,15 @@
     </section>
 
     <!-- LAYOUT: FILTER SIDEBAR & PRODUCT CATALOG -->
+    <!-- Mobile Filter Toggle Button -->
+    <button class="fk-mobile-filter-btn" ng-click="toggleMobileFilters()">
+      <i class="fa-solid fa-sliders"></i> {{showMobileFilters ? 'Hide Filters' : 'Show Filters & Categories'}}
+    </button>
+
     <div class="fk-layout">
 
       <!-- FILTER SIDEBAR -->
-      <aside class="fk-filter-sidebar">
+      <aside class="fk-filter-sidebar" ng-class="{'open-mobile': showMobileFilters}">
         <div class="fk-filter-head">
           <h3><i class="fa-solid fa-sliders" style="color: var(--fk-blue);"></i> Filters</h3>
           <button class="fk-reset-btn" ng-click="resetFilters()">CLEAR ALL</button>
