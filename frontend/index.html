@@ -63,13 +63,33 @@
           </span>
         </div>
 
-        <!-- Login Button -->
-        <button class="fk-btn-login">
-          <i class="fa-regular fa-user"></i> Login
+        <!-- Login Button (when logged out) -->
+        <button class="fk-btn-login" ng-if="!currentUser" ng-click="openAuthModal('login')">
+          <i class="fa-regular fa-user"></i> Login / Register
         </button>
 
+        <!-- User Profile Pill & Dropdown (when logged in) -->
+        <div class="sn-user-menu-container" ng-if="currentUser">
+          <div class="sn-user-pill" ng-click="toggleUserMenu()">
+            <div class="sn-user-avatar">{{currentUser.initial || 'U'}}</div>
+            <span>{{currentUser.name}}</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+          </div>
+          <div class="sn-user-dropdown" ng-if="isUserMenuOpen">
+            <div class="sn-user-dropdown-item" ng-click="triggerToast('My Orders (Demo)'); toggleUserMenu();">
+              <i class="fa-solid fa-box"></i> My Orders
+            </div>
+            <div class="sn-user-dropdown-item" ng-click="triggerToast('Account Settings (Demo)'); toggleUserMenu();">
+              <i class="fa-solid fa-user-gear"></i> Account Settings
+            </div>
+            <div class="sn-user-dropdown-item danger" ng-click="handleLogout()">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </div>
+          </div>
+        </div>
+
         <!-- Wishlist -->
-        <div class="fk-nav-item" style="cursor: pointer;" ng-click="triggerToast('Wishlist contains ' + getWishlistCount() + ' items')">
+        <div class="fk-nav-item" style="cursor: pointer;" ng-click="openWishlist()">
           <i class="fa-regular fa-heart" style="font-size: 18px;"></i>
           <span>Wishlist</span>
           <span class="fk-badge" ng-if="getWishlistCount() > 0">{{getWishlistCount()}}</span>
@@ -552,6 +572,124 @@
        ========================================== -->
   <div ng-if="showToast" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #ffffff; padding: 12px 28px; border-radius: var(--radius-full); font-weight: 700; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 4000; border: 1px solid rgba(255,255,255,0.2);">
     {{toastMessage}}
+  </div>
+
+  <!-- ==========================================
+       SLIDE-OVER WISHLIST DRAWER
+       ========================================== -->
+  <div class="fk-drawer-overlay" ng-class="{'open': isWishlistOpen}" ng-click="closeWishlist()">
+    <div class="fk-cart-drawer" ng-click="$event.stopPropagation()">
+      
+      <!-- Drawer Head -->
+      <div class="fk-drawer-head" style="background: #e11d48;">
+        <h3><i class="fa-solid fa-heart"></i> My Wishlist ({{getWishlistCount()}})</h3>
+        <button class="fk-close-btn" ng-click="closeWishlist()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Drawer Items List -->
+      <div class="fk-cart-body">
+        
+        <!-- Empty Wishlist -->
+        <div ng-if="getWishlistItems().length === 0" style="text-align: center; padding: 60px 20px; color: var(--fk-text-muted);">
+          <i class="fa-solid fa-heart-crack fa-3x" style="color: var(--fk-text-muted); margin-bottom: 16px;"></i>
+          <h4 style="font-size: 16px; font-weight: 700;">Your Wishlist is Empty</h4>
+          <p style="font-size: 13px; margin-top: 6px;">Tap the heart icon on any product card to save your favorite items here.</p>
+        </div>
+
+        <!-- Wishlist Items -->
+        <div class="fk-cart-item" ng-repeat="p in getWishlistItems()">
+          <img ng-src="{{p.primary_image}}" alt="{{p.title}}" class="fk-cart-img">
+          
+          <div class="fk-cart-info">
+            <h4 class="fk-cart-title">{{p.title}}</h4>
+
+            <div style="font-weight: 800; color: var(--fk-text-main); font-size: 14px; margin-top: 4px;">
+              {{p.price | inrCurrency}}
+              <span class="fk-discount-badge" ng-if="p.original_price" style="font-size: 11px; margin-left: 6px;">{{p | discountTag}}</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="sn-wishlist-item-actions">
+              <button class="sn-btn-move-cart" ng-click="moveToCartFromWishlist(p)">
+                <i class="fa-solid fa-cart-shopping"></i> Move to Cart
+              </button>
+            </div>
+          </div>
+
+          <!-- Remove Button -->
+          <button class="fk-remove-btn" ng-click="removeFromWishlist(p)" title="Remove item">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       LOGIN & REGISTRATION MODAL
+       ========================================== -->
+  <div class="fk-modal-overlay" ng-class="{'open': isAuthModalOpen}" ng-click="closeAuthModal()">
+    <div class="sn-auth-card" ng-click="$event.stopPropagation()">
+      
+      <!-- Close Button -->
+      <button class="fk-modal-close" ng-click="closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- Auth Tabs -->
+      <div class="sn-auth-tabs">
+        <div class="sn-auth-tab" ng-class="{'active': authTab === 'login'}" ng-click="authTab = 'login'">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </div>
+        <div class="sn-auth-tab" ng-class="{'active': authTab === 'register'}" ng-click="authTab = 'register'">
+          <i class="fa-solid fa-user-plus"></i> Register
+        </div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form ng-if="authTab === 'login'" ng-submit="handleLogin()">
+        <div class="sn-demo-hint">
+          💡 <strong>Demo Login:</strong> Enter any email & password (e.g. <code>demo@shopnivo.com</code> / <code>pass123</code>)!
+        </div>
+
+        <div class="sn-input-group">
+          <label>Email Address</label>
+          <input type="email" class="sn-input" placeholder="e.g. rahul@example.com" ng-model="loginForm.email" required>
+        </div>
+
+        <div class="sn-input-group">
+          <label>Password</label>
+          <input type="password" class="sn-input" placeholder="Enter password" ng-model="loginForm.password" required>
+        </div>
+
+        <button type="submit" class="fk-btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+          LOGIN TO SHOPNIVO <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form ng-if="authTab === 'register'" ng-submit="handleRegister()">
+        <div class="sn-input-group">
+          <label>Full Name</label>
+          <input type="text" class="sn-input" placeholder="e.g. Rahul Sharma" ng-model="registerForm.name" required>
+        </div>
+
+        <div class="sn-input-group">
+          <label>Email Address</label>
+          <input type="email" class="sn-input" placeholder="e.g. rahul@example.com" ng-model="registerForm.email" required>
+        </div>
+
+        <div class="sn-input-group">
+          <label>Password</label>
+          <input type="password" class="sn-input" placeholder="Create password" ng-model="registerForm.password" required>
+        </div>
+
+        <button type="submit" class="fk-btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+          CREATE ACCOUNT <i class="fa-solid fa-user-check"></i>
+        </button>
+      </form>
+
+    </div>
   </div>
 
   <!-- ==========================================

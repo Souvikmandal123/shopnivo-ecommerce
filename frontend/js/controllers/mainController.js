@@ -241,9 +241,93 @@
         $scope.isQuickViewOpen = true;
       };
 
-      $scope.closeQuickView = function () {
-        $scope.isQuickViewOpen = false;
-        $scope.quickViewProduct = null;
+      // Wishlist Drawer State & Methods
+      $scope.isWishlistOpen = false;
+      $scope.openWishlist = function () {
+        $scope.isWishlistOpen = true;
+      };
+
+      $scope.closeWishlist = function () {
+        $scope.isWishlistOpen = false;
+      };
+
+      $scope.getWishlistItems = function () {
+        return cartService.getWishlist();
+      };
+
+      $scope.removeFromWishlist = function (product) {
+        cartService.toggleWishlist(product);
+        $scope.triggerToast('Item removed from Wishlist');
+      };
+
+      $scope.moveToCartFromWishlist = function (product) {
+        cartService.addToCart(product, null, null);
+        cartService.toggleWishlist(product);
+        $scope.triggerToast('Moved to Cart 🛒');
+      };
+
+      // Authentication Modal State & Methods
+      $scope.isAuthModalOpen = false;
+      $scope.authTab = 'login';
+      $scope.isUserMenuOpen = false;
+      $scope.currentUser = JSON.parse(localStorage.getItem('sn_user') || 'null');
+      $scope.loginForm = { email: '', password: '' };
+      $scope.registerForm = { name: '', email: '', password: '' };
+
+      $scope.openAuthModal = function (tab) {
+        $scope.authTab = tab || 'login';
+        $scope.isAuthModalOpen = true;
+        $scope.isUserMenuOpen = false;
+      };
+
+      $scope.closeAuthModal = function () {
+        $scope.isAuthModalOpen = false;
+      };
+
+      $scope.toggleUserMenu = function () {
+        $scope.isUserMenuOpen = !$scope.isUserMenuOpen;
+      };
+
+      $scope.handleLogin = function () {
+        if (!$scope.loginForm.email || !$scope.loginForm.password) {
+          $scope.triggerToast('Please fill in all fields');
+          return;
+        }
+        var user = {
+          name: $scope.loginForm.email.split('@')[0],
+          email: $scope.loginForm.email,
+          token: 'token_' + Date.now()
+        };
+        // Format initial for avatar
+        user.initial = user.name.charAt(0).toUpperCase();
+        $scope.currentUser = user;
+        localStorage.setItem('sn_user', JSON.stringify(user));
+        $scope.closeAuthModal();
+        $scope.triggerToast('Logged in successfully! Welcome, ' + user.name + ' 👋');
+      };
+
+      $scope.handleRegister = function () {
+        if (!$scope.registerForm.name || !$scope.registerForm.email || !$scope.registerForm.password) {
+          $scope.triggerToast('Please fill in all fields');
+          return;
+        }
+        var user = {
+          name: $scope.registerForm.name,
+          email: $scope.registerForm.email,
+          token: 'token_' + Date.now()
+        };
+        user.initial = user.name.charAt(0).toUpperCase();
+        $scope.currentUser = user;
+        localStorage.setItem('sn_user', JSON.stringify(user));
+        $scope.closeAuthModal();
+        $scope.triggerToast('Account created! Welcome to ShopNivo, ' + user.name + ' 🎉');
+      };
+
+      $scope.handleLogout = function () {
+        $scope.currentUser = null;
+        $scope.isUserMenuOpen = false;
+        localStorage.removeItem('sn_user');
+        $scope.triggerToast('Logged out successfully');
       };
 
       $scope.init();
